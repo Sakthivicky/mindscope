@@ -7,11 +7,13 @@ interface FormData {
   name: string;
   age: number;
   gender: string;
+  lifeSatisfaction: string;
   stressLevel: string;
-  anxietyLevel: string;
-  mood: string;
   copingMechanisms: string;
-  sleepQuality: string;
+  emotionalHealth: string;
+  selfCare: string;
+  mentalImpactOnDailyLife: string;
+  physicalHealthImpact: string;
 }
 
 export default function MentalHealthSurvey() {
@@ -19,11 +21,13 @@ export default function MentalHealthSurvey() {
     name: '',
     age: 0,
     gender: 'other',
+    lifeSatisfaction: '',
     stressLevel: '',
-    anxietyLevel: '',
-    mood: 'neutral',
     copingMechanisms: '',
-    sleepQuality: '',
+    emotionalHealth: '',
+    selfCare: '',
+    mentalImpactOnDailyLife: '',
+    physicalHealthImpact: '',
   });
 
   const router = useRouter();
@@ -44,11 +48,13 @@ export default function MentalHealthSurvey() {
 
     // Validation for mental health questions
     if (
+      !formData.lifeSatisfaction ||
       !formData.stressLevel ||
-      !formData.anxietyLevel ||
-      !formData.mood ||
       !formData.copingMechanisms ||
-      !formData.sleepQuality
+      !formData.emotionalHealth ||
+      !formData.selfCare ||
+      !formData.mentalImpactOnDailyLife ||
+      !formData.physicalHealthImpact
     ) {
       alert('Please answer all questions.');
       return;
@@ -66,7 +72,6 @@ export default function MentalHealthSurvey() {
       const result = await response.json();
       if (result.id) {
         router.push(`/report?id=${result.id}`);
-        alert
       } else {
         alert('Error generating report');
       }
@@ -122,7 +127,25 @@ export default function MentalHealthSurvey() {
 
         {/* Mental Health Questions */}
         <div>
-          <label htmlFor="stressLevel" className="block text-lg font-medium">Stress Level:</label>
+          <label htmlFor="lifeSatisfaction" className="block text-lg font-medium">Overall Life Satisfaction (Past Month):</label>
+          <select
+            id="lifeSatisfaction"
+            name="lifeSatisfaction"
+            value={formData.lifeSatisfaction}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Select Life Satisfaction</option>
+            <option value="very_dissatisfied">Very Dissatisfied</option>
+            <option value="dissatisfied">Dissatisfied</option>
+            <option value="neutral">Neutral</option>
+            <option value="satisfied">Satisfied</option>
+            <option value="very_satisfied">Very Satisfied</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="stressLevel" className="block text-lg font-medium">How often have you felt overwhelmed in the past week?</label>
           <select
             id="stressLevel"
             name="stressLevel"
@@ -138,60 +161,97 @@ export default function MentalHealthSurvey() {
         </div>
 
         <div>
-          <label htmlFor="anxietyLevel" className="block text-lg font-medium">Anxiety Level:</label>
-          <select
-            id="anxietyLevel"
-            name="anxietyLevel"
-            value={formData.anxietyLevel}
-            onChange={handleChange}
-            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
-          >
-            <option value="">Select Anxiety Level</option>
-            <option value="low">Low</option>
-            <option value="moderate">Moderate</option>
-            <option value="high">High</option>
-          </select>
-        </div>
+  <label htmlFor="copingMechanisms" className="block text-lg font-medium">How do you typically manage emotional distress?</label>
+  <select
+    id="copingMechanisms"
+    name="copingMechanisms"
+    value={formData.copingMechanisms}
+    onChange={handleChange}
+    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+  >
+    <option value="">Select your coping mechanism</option>
+    <option value="exercise">Exercise</option>
+    <option value="meditation">Meditation</option>
+    <option value="talking_to_friends">Talking to friends/family</option>
+    <option value="hobbies">Engaging in hobbies</option>
+    <option value="journaling">Journaling</option>
+    <option value="therapy">Therapy or counseling</option>
+    <option value="relaxation_techniques">Relaxation techniques (e.g., deep breathing)</option>
+    <option value="avoidance">Avoidance (e.g., distracting activities)</option>
+    <option value="other">Other</option>
+  </select>
+</div>
+
 
         <div>
-          <label htmlFor="mood" className="block text-lg font-medium">Mood:</label>
+          <label htmlFor="emotionalHealth" className="block text-lg font-medium">In the past month, how would you rate your emotional well-being?</label>
           <select
-            id="mood"
-            name="mood"
-            value={formData.mood}
+            id="emotionalHealth"
+            name="emotionalHealth"
+            value={formData.emotionalHealth}
             onChange={handleChange}
             className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
           >
-            <option value="neutral">Neutral</option>
+            <option value="">Select Emotional Health</option>
+            <option value="poor">Poor</option>
+            <option value="fair">Fair</option>
             <option value="good">Good</option>
-            <option value="sad">Sad</option>
+            <option value="excellent">Excellent</option>
           </select>
         </div>
 
         <div>
-          <label htmlFor="copingMechanisms" className="block text-lg font-medium">Coping Mechanisms:</label>
-          <input
-            type="text"
-            id="copingMechanisms"
-            name="copingMechanisms"
-            value={formData.copingMechanisms}
+          <label htmlFor="selfCare" className="block text-lg font-medium">How often do you practice self-care (e.g., relaxation techniques, mindfulness)?</label>
+          <select
+            id="selfCare"
+            name="selfCare"
+            value={formData.selfCare}
             onChange={handleChange}
             className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
-            placeholder="Describe your coping mechanisms"
-          />
+          >
+            <option value="">Select Frequency</option>
+            <option value="never">Never</option>
+            <option value="rarely">Rarely</option>
+            <option value="occasionally">Occasionally</option>
+            <option value="often">Often</option>
+            <option value="always">Always</option>
+          </select>
         </div>
 
         <div>
-          <label htmlFor="sleepQuality" className="block text-lg font-medium">Sleep Quality:</label>
-          <input
-            type="text"
-            id="sleepQuality"
-            name="sleepQuality"
-            value={formData.sleepQuality}
+          <label htmlFor="mentalImpactOnDailyLife" className="block text-lg font-medium">How much has your mental health impacted your daily life in the past month?</label>
+          <select
+            id="mentalImpactOnDailyLife"
+            name="mentalImpactOnDailyLife"
+            value={formData.mentalImpactOnDailyLife}
             onChange={handleChange}
             className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
-            placeholder="Describe your sleep quality"
-          />
+          >
+            <option value="">Select Impact Level</option>
+            <option value="none">No Impact</option>
+            <option value="minor">Minor Impact</option>
+            <option value="moderate">Moderate Impact</option>
+            <option value="major">Major Impact</option>
+            <option value="severe">Severe Impact</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="physicalHealthImpact" className="block text-lg font-medium">Have you noticed any physical health changes related to your mental health in the past month?</label>
+          <select
+            id="physicalHealthImpact"
+            name="physicalHealthImpact"
+            value={formData.physicalHealthImpact}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Select Impact</option>
+            <option value="none">No Impact</option>
+            <option value="minor">Minor Impact</option>
+            <option value="moderate">Moderate Impact</option>
+            <option value="major">Major Impact</option>
+            <option value="severe">Severe Impact</option>
+          </select>
         </div>
 
         {/* Submit Button */}

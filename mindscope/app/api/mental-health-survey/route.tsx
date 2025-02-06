@@ -6,7 +6,7 @@ import Report from '../models/reports'; // MongoDB model for reports
 export async function POST(req: NextRequest) {
   try {
     // Parse the request body
-    const { name, age, gender, stressLevel, anxietyLevel, mood, copingMechanisms, sleepQuality } = await req.json();
+    const { name, age, gender, stressLevel,  lifeSatisfaction,emotionalHealth, copingMechanisms, selfCare, mentalImpactOnDailyLife, physicalHealthImpact } = await req.json();
 
     // Connect to MongoDB
     const db = await connectToDatabase();
@@ -16,11 +16,13 @@ export async function POST(req: NextRequest) {
       name,
       age,
       gender,
+      lifeSatisfaction,
       stressLevel,
-      anxietyLevel,
-      mood,
       copingMechanisms,
-      sleepQuality,
+      emotionalHealth,
+      selfCare,
+      mentalImpactOnDailyLife,
+      physicalHealthImpact,
     });
 
     // Save the new report and return the saved report ID
