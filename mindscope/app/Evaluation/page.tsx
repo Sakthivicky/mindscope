@@ -1,445 +1,209 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+interface FormData {
+  name: string;
+  age: number;
+  gender: string;
+  stressLevel: string;
+  anxietyLevel: string;
+  mood: string;
+  copingMechanisms: string;
+  sleepQuality: string;
+}
 
 export default function MentalHealthSurvey() {
-  const [formData, setFormData] = useState({
-    stressLevel: "",
-    anxietyLevel: "",
-    mood: "",
-    sleepQuality: "",
-    physicalActivity: "",
-    socialInteractions: "",
-    copingMechanisms: "",
-    mentalHealthSupport: "",
-    workLifeBalance: "",
-    recentChanges: "",
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    age: 0,
+    gender: 'other',
+    stressLevel: '',
+    anxietyLevel: '',
+    mood: 'neutral',
+    copingMechanisms: '',
+    sleepQuality: '',
   });
 
-  const [analysis, setAnalysis] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Send the survey data to the backend for analysis
+    // Validation for personal details
+    if (!formData.name || formData.age <= 0) {
+      alert('Please fill out all personal details.');
+      return;
+    }
+
+    // Validation for mental health questions
+    if (
+      !formData.stressLevel ||
+      !formData.anxietyLevel ||
+      !formData.mood ||
+      !formData.copingMechanisms ||
+      !formData.sleepQuality
+    ) {
+      alert('Please answer all questions.');
+      return;
+    }
+
     try {
-      const response = await fetch("/api/mental-health-survey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('api/mental-health-survey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-      if (data.analysis) {
-        setAnalysis(data.analysis); // Show the analysis report
+      const result = await response.json();
+      if (result.id) {
+        router.push(`/report?id=${result.id}`);
+        alert
       } else {
-        alert("Error: Unable to generate report");
+        alert('Error generating report');
       }
     } catch (error) {
-      console.error("Error:", error);
-      alert("Error submitting survey");
+      console.error('Error during form submission:', error);
+      alert('Failed to generate report');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center mb-6">Mental Health Survey</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Stress Level */}
-          <div>
-            <p className="text-lg font-semibold">How would you rate your stress level?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="stressLevel"
-                  value="Low"
-                  checked={formData.stressLevel === "Low"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Low
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="stressLevel"
-                  value="Moderate"
-                  checked={formData.stressLevel === "Moderate"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Moderate
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="stressLevel"
-                  value="High"
-                  checked={formData.stressLevel === "High"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                High
-              </label>
-            </div>
-          </div>
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
+      <h1 className="text-3xl font-semibold text-center mb-6">Mental Health Survey</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Personal Details */}
+        <div>
+          <label htmlFor="name" className="block text-lg font-medium">Name:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+            placeholder="Enter your name"
+          />
+        </div>
+        <div>
+          <label htmlFor="age" className="block text-lg font-medium">Age:</label>
+          <input
+            type="number"
+            id="age"
+            name="age"
+            value={formData.age}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+            placeholder="Enter your age"
+          />
+        </div>
+        <div>
+          <label htmlFor="gender" className="block text-lg font-medium">Gender:</label>
+          <select
+            id="gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="other">Other</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-          {/* Anxiety Level */}
-          <div>
-            <p className="text-lg font-semibold">How would you rate your anxiety level?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="anxietyLevel"
-                  value="Low"
-                  checked={formData.anxietyLevel === "Low"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Low
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="anxietyLevel"
-                  value="Moderate"
-                  checked={formData.anxietyLevel === "Moderate"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Moderate
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="anxietyLevel"
-                  value="High"
-                  checked={formData.anxietyLevel === "High"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                High
-              </label>
-            </div>
-          </div>
+        {/* Mental Health Questions */}
+        <div>
+          <label htmlFor="stressLevel" className="block text-lg font-medium">Stress Level:</label>
+          <select
+            id="stressLevel"
+            name="stressLevel"
+            value={formData.stressLevel}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Select Stress Level</option>
+            <option value="low">Low</option>
+            <option value="moderate">Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </div>
 
-          {/* Mood */}
-          <div>
-            <p className="text-lg font-semibold">How would you describe your current mood?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="mood"
-                  value="Happy"
-                  checked={formData.mood === "Happy"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Happy
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="mood"
-                  value="Neutral"
-                  checked={formData.mood === "Neutral"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Neutral
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="mood"
-                  value="Sad"
-                  checked={formData.mood === "Sad"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Sad
-              </label>
-            </div>
-          </div>
+        <div>
+          <label htmlFor="anxietyLevel" className="block text-lg font-medium">Anxiety Level:</label>
+          <select
+            id="anxietyLevel"
+            name="anxietyLevel"
+            value={formData.anxietyLevel}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Select Anxiety Level</option>
+            <option value="low">Low</option>
+            <option value="moderate">Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </div>
 
-          {/* Sleep Quality */}
-          <div>
-            <p className="text-lg font-semibold">How would you rate your sleep quality?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="sleepQuality"
-                  value="Good"
-                  checked={formData.sleepQuality === "Good"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Good
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sleepQuality"
-                  value="Average"
-                  checked={formData.sleepQuality === "Average"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Average
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sleepQuality"
-                  value="Poor"
-                  checked={formData.sleepQuality === "Poor"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Poor
-              </label>
-            </div>
-          </div>
+        <div>
+          <label htmlFor="mood" className="block text-lg font-medium">Mood:</label>
+          <select
+            id="mood"
+            name="mood"
+            value={formData.mood}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="neutral">Neutral</option>
+            <option value="good">Good</option>
+            <option value="sad">Sad</option>
+          </select>
+        </div>
 
-          {/* Physical Activity */}
-          <div>
-            <p className="text-lg font-semibold">How often do you engage in physical activity?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="physicalActivity"
-                  value="Daily"
-                  checked={formData.physicalActivity === "Daily"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Daily
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="physicalActivity"
-                  value="Weekly"
-                  checked={formData.physicalActivity === "Weekly"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Weekly
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="physicalActivity"
-                  value="Rarely"
-                  checked={formData.physicalActivity === "Rarely"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Rarely
-              </label>
-            </div>
-          </div>
+        <div>
+          <label htmlFor="copingMechanisms" className="block text-lg font-medium">Coping Mechanisms:</label>
+          <input
+            type="text"
+            id="copingMechanisms"
+            name="copingMechanisms"
+            value={formData.copingMechanisms}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+            placeholder="Describe your coping mechanisms"
+          />
+        </div>
 
-          {/* Social Interactions */}
-          <div>
-            <p className="text-lg font-semibold">How would you describe your social interactions?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="socialInteractions"
-                  value="Very Social"
-                  checked={formData.socialInteractions === "Very Social"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Very Social
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="socialInteractions"
-                  value="Somewhat Social"
-                  checked={formData.socialInteractions === "Somewhat Social"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Somewhat Social
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="socialInteractions"
-                  value="Not Social"
-                  checked={formData.socialInteractions === "Not Social"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Not Social
-              </label>
-            </div>
-          </div>
+        <div>
+          <label htmlFor="sleepQuality" className="block text-lg font-medium">Sleep Quality:</label>
+          <input
+            type="text"
+            id="sleepQuality"
+            name="sleepQuality"
+            value={formData.sleepQuality}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+            placeholder="Describe your sleep quality"
+          />
+        </div>
 
-          {/* Coping Mechanisms */}
-          <div>
-            <p className="text-lg font-semibold">Which coping mechanisms do you use?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="copingMechanisms"
-                  value="Exercise"
-                  checked={formData.copingMechanisms === "Exercise"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Exercise
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="copingMechanisms"
-                  value="Meditation"
-                  checked={formData.copingMechanisms === "Meditation"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Meditation
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="copingMechanisms"
-                  value="Talking to Others"
-                  checked={formData.copingMechanisms === "Talking to Others"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Talking to Others
-              </label>
-            </div>
-          </div>
-
-          {/* Mental Health Support */}
-          <div>
-            <p className="text-lg font-semibold">Do you have access to mental health support?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="mentalHealthSupport"
-                  value="Yes"
-                  checked={formData.mentalHealthSupport === "Yes"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Yes
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="mentalHealthSupport"
-                  value="No"
-                  checked={formData.mentalHealthSupport === "No"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                No
-              </label>
-            </div>
-          </div>
-
-          {/* Work-Life Balance */}
-          <div>
-            <p className="text-lg font-semibold">How would you rate your work-life balance?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="workLifeBalance"
-                  value="Good"
-                  checked={formData.workLifeBalance === "Good"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Good
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="workLifeBalance"
-                  value="Average"
-                  checked={formData.workLifeBalance === "Average"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Average
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="workLifeBalance"
-                  value="Poor"
-                  checked={formData.workLifeBalance === "Poor"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Poor
-              </label>
-            </div>
-          </div>
-
-          {/* Recent Life Changes */}
-          <div>
-            <p className="text-lg font-semibold">Have you experienced any recent life changes?</p>
-            <div className="space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="recentChanges"
-                  value="Yes"
-                  checked={formData.recentChanges === "Yes"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                Yes
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="recentChanges"
-                  value="No"
-                  checked={formData.recentChanges === "No"}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                No
-              </label>
-            </div>
-          </div>
-
-          <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600">
-            Submit Survey
+        {/* Submit Button */}
+        <div className="text-center">
+          <button
+            type="submit"
+            className="mt-6 px-6 py-2 bg-blue-500 text-white font-semibold rounded-md shadow-sm hover:bg-blue-600"
+          >
+            Generate Report
           </button>
-        </form>
-
-        {analysis && (
-          <div className="mt-6 bg-blue-50 p-4 rounded-md">
-            <h3 className="text-lg font-semibold">Mental Health Analysis:</h3>
-            <p>{analysis}</p>
-          </div>
-        )}
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

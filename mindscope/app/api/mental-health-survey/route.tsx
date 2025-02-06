@@ -1,72 +1,38 @@
-import { OpenAI } from "openai";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server'; // Import NextRequest and NextResponse
+import connectToDatabase from '../lib/mongodb'; // MongoDB connection file
+import Report from '../models/reports'; // MongoDB model for reports
 
-// OpenAI setup using environment variables
-const openai = new OpenAI({
-  apiKey: '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', // Use env variable for security
-});
-
-// Named export for the POST method
+// Named export for POST method
 export async function POST(req: NextRequest) {
-  const { stressLevel, anxietyLevel, mood, sleepQuality, physicalActivity, socialInteractions, copingMechanisms, mentalHealthSupport, workLifeBalance, recentChanges } = await req.json();
-
-  const surveyAnswers = {
-    stressLevel,
-    anxietyLevel,
-    mood,
-    sleepQuality,
-    physicalActivity,
-    socialInteractions,
-    copingMechanisms,
-    mentalHealthSupport,
-    workLifeBalance,
-    recentChanges,
-  };
-
-  // Create a prompt for the OpenAI API based on the survey answers
-  const prompt = `
-    I am providing responses to a mental health survey. Please analyze the answers and generate a short report about the individual's mental health.
-
-    Stress Level: ${stressLevel}
-    Anxiety Level: ${anxietyLevel}
-    Mood: ${mood}
-    Sleep Quality: ${sleepQuality}
-    Physical Activity: ${physicalActivity}
-    Social Interactions: ${socialInteractions}
-    Coping Mechanisms: ${copingMechanisms}
-    Mental Health Support: ${mentalHealthSupport}
-    Work-Life Balance: ${workLifeBalance}
-    Recent Life Changes: ${recentChanges}
-
-    Based on these responses, give an analysis of the individual's mental health.
-  `;
-
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Correct model name
-      messages: [
-        {
-          role: "system",
-          content: "You are a mental health assistant analyzing survey responses give shorter answer.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+    // Parse the request body
+    const { name, age, gender, stressLevel, anxietyLevel, mood, copingMechanisms, sleepQuality } = await req.json();
+
+    // Connect to MongoDB
+    const db = await connectToDatabase();
+
+    // Save data to the database
+    const newReport = new Report({
+      name,
+      age,
+      gender,
+      stressLevel,
+      anxietyLevel,
+      mood,
+      copingMechanisms,
+      sleepQuality,
     });
 
-    // Get the generated analysis from OpenAI
-    const analysis = response.choices[0].message.content;
+    // Save the new report and return the saved report ID
+    const savedReport = await newReport.save();
 
-    // Respond with the analysis report using NextResponse
-    return NextResponse.json({
-      message: "Survey successfully analyzed",
-      analysis: analysis,
-    });
+    // Return response with the saved report ID
+    return new NextResponse(JSON.stringify({ id: savedReport._id }), { status: 200 });
   } catch (error) {
-    console.error("Error analyzing survey:", error);
-    // Respond with error using NextResponse
-    return NextResponse.json({ message: "Error analyzing survey" }, { status: 500 });
+    // Handle error and send an error response
+    return new NextResponse(
+      JSON.stringify({ message: 'Error generating report', error: error }),
+      { status: 500 }
+    );
   }
 }
